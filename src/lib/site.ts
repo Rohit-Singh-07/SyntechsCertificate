@@ -7,4 +7,4 @@
  * - No trailing slash.
  * - Must include the protocol (https://).
  */
-export const SITE_URL = "https://syntechscertificate.tixin.in/";
+export const SITE_URL = "https://syntechs-certificate.tixin.in/";
