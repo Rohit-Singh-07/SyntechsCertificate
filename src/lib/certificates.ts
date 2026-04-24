@@ -4,6 +4,14 @@ import workSansRegularUrl from "@/assets/fonts/WorkSans-Regular.ttf?url";
 import workSansBoldUrl from "@/assets/fonts/WorkSans-Bold.ttf?url";
 import loraItalicUrl from "@/assets/fonts/Lora-Italic.ttf?url";
 import { SITE_URL } from "@/lib/site";
+import type { Participant } from "@/data/participants";
+
+// The verification handle for a participant: their reg if present, else the
+// synthetic `id` assigned in participants.ts. Every participant must resolve
+// to one of these — `buildCertificatePdf` throws otherwise.
+export function getVerifyHandle(p: Participant): string {
+  return p.reg || p.id || "";
+}
 
 const SANS = "WorkSans";
 const SERIF = "Lora";
@@ -18,10 +26,7 @@ async function fetchAsBase64(url: string): Promise<string> {
   const bytes = new Uint8Array(buf);
   const chunk = 0x8000;
   for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(
-      null,
-      Array.from(bytes.subarray(i, i + chunk)),
-    );
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
   }
   return btoa(binary);
 }
@@ -42,10 +47,7 @@ async function loadFonts() {
   return fontsPromise;
 }
 
-function registerFonts(
-  doc: jsPDF,
-  fonts: { regular: string; bold: string; italic: string },
-) {
+function registerFonts(doc: jsPDF, fonts: { regular: string; bold: string; italic: string }) {
   doc.addFileToVFS("WorkSans-Regular.ttf", fonts.regular);
   doc.addFont("WorkSans-Regular.ttf", SANS, "normal");
   doc.addFileToVFS("WorkSans-Bold.ttf", fonts.bold);
@@ -123,28 +125,25 @@ export const CERTIFICATES: CertificateMeta[] = [
 
 const hexToRgb = (hex: string): [number, number, number] => {
   const h = hex.replace("#", "");
-  return [
-    parseInt(h.slice(0, 2), 16),
-    parseInt(h.slice(2, 4), 16),
-    parseInt(h.slice(4, 6), 16),
-  ];
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 };
 
 function wrap(doc: jsPDF, text: string, maxWidth: number): string[] {
   return doc.splitTextToSize(text, maxWidth);
 }
 
-export function getVerifyUrl(registration: string, certId: CertificateId): string {
+export function getVerifyUrl(participant: Participant, certId: CertificateId): string {
   const base = SITE_URL.replace(/\/$/, "");
-  const reg = encodeURIComponent(registration || "unknown");
-  return `${base}/verify/${reg}?c=${certId}`;
+  const handle = encodeURIComponent(getVerifyHandle(participant) || "unknown");
+  return `${base}/verify/${handle}?c=${certId}`;
 }
 
 export async function buildCertificatePdf(
   cert: CertificateMeta,
-  participantName: string,
-  registration: string,
+  participant: Participant,
 ): Promise<jsPDF> {
+  const participantName = participant.name;
+  const handle = getVerifyHandle(participant);
   const fonts = await loadFonts();
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   registerFonts(doc, fonts);
@@ -289,7 +288,7 @@ export async function buildCertificatePdf(
   doc.text("Organising Partner", rightCx, footerY + 30, { align: "center" });
 
   // ---------- Centre QR plate (sits between body and signature row) ----------
-  const verifyUrl = getVerifyUrl(registration, cert.id);
+  const verifyUrl = getVerifyUrl(participant, cert.id);
   const qrSize = 50;
   const qrPadY = 6;
   const plateW = 84;
@@ -308,14 +307,7 @@ export async function buildCertificatePdf(
     doc.setDrawColor(ar, ag, ab);
     doc.setLineWidth(0.8);
     doc.roundedRect(plateX - 2, plateY - 2, plateW + 4, plateH + 4, 7, 7, "S");
-    doc.addImage(
-      qrDataUrl,
-      "PNG",
-      plateX + (plateW - qrSize) / 2,
-      plateY + qrPadY,
-      qrSize,
-      qrSize,
-    );
+    doc.addImage(qrDataUrl, "PNG", plateX + (plateW - qrSize) / 2, plateY + qrPadY, qrSize, qrSize);
     doc.setFont(SANS, "bold");
     doc.setFontSize(6.5);
     doc.setTextColor(40, 40, 46);
@@ -331,7 +323,7 @@ export async function buildCertificatePdf(
   doc.setFont(SANS, "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(130, 130, 138);
-  const certCode = `SYN26-${cert.id.toUpperCase()}-${(registration || "GUEST").toString().slice(-6)}`;
+  const certCode = `SYN26-${cert.id.toUpperCase()}-${(handle || "GUEST").slice(-6)}`;
   const issued = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "long",
@@ -339,7 +331,7 @@ export async function buildCertificatePdf(
   });
   const metaParts = [
     `ID  ${certCode}`,
-    registration ? `Reg  ${registration}` : null,
+    participant.reg ? `Reg  ${participant.reg}` : null,
     `Issued  ${issued}`,
   ].filter(Boolean) as string[];
   doc.text(metaParts.join("    ·    "), W / 2, H - 70, {
@@ -350,12 +342,8 @@ export async function buildCertificatePdf(
   return doc;
 }
 
-export async function downloadCertificate(
-  cert: CertificateMeta,
-  participantName: string,
-  registration: string,
-) {
-  const doc = await buildCertificatePdf(cert, participantName, registration);
-  const safeName = participantName.replace(/[^a-z0-9]+/gi, "_");
+export async function downloadCertificate(cert: CertificateMeta, participant: Participant) {
+  const doc = await buildCertificatePdf(cert, participant);
+  const safeName = participant.name.replace(/[^a-z0-9]+/gi, "_");
   doc.save(`Syntechs2026_${cert.id}_${safeName}.pdf`);
 }

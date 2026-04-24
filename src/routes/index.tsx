@@ -28,10 +28,7 @@ function Index() {
   const [submitted, setSubmitted] = useState("");
   const [selected, setSelected] = useState<Participant | null>(null);
 
-  const results = useMemo(
-    () => (submitted ? findParticipant(submitted) : []),
-    [submitted],
-  );
+  const results = useMemo(() => (submitted ? findParticipant(submitted) : []), [submitted]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,10 +50,7 @@ function Index() {
   const downloadAll = () => {
     if (!selected) return;
     CERTIFICATES.forEach((c, i) => {
-      setTimeout(
-        () => downloadCertificate(c, selected.name, selected.reg),
-        i * 350,
-      );
+      setTimeout(() => downloadCertificate(c, selected), i * 350);
     });
     toast.success(`Generating ${CERTIFICATES.length} certificates…`);
   };
@@ -88,9 +82,8 @@ function Index() {
             <br /> certificates, ready to download.
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            Enter your registration number, name or email to instantly receive
-            all five official certificates from Trendians, HackShastra and
-            CodeChef.
+            Enter your registration number, name or email to instantly receive all five official
+            certificates from Trendians, HackShastra and CodeChef.
           </p>
 
           <form
@@ -116,12 +109,10 @@ function Index() {
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-gold" /> Verified
-              participant list
+              <ShieldCheck className="h-3.5 w-3.5 text-gold" /> Verified participant list
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Award className="h-3.5 w-3.5 text-gold" /> 5 official
-              certificates
+              <Award className="h-3.5 w-3.5 text-gold" /> 5 official certificates
             </span>
             <span>PDF · A4 landscape</span>
           </div>
@@ -137,21 +128,14 @@ function Index() {
             </h2>
             <ul className="mt-4 divide-y divide-border">
               {results.map((p) => (
-                <li
-                  key={`${p.reg}-${p.name}`}
-                  className="flex items-center justify-between py-3"
-                >
+                <li key={`${p.reg}-${p.name}`} className="flex items-center justify-between py-3">
                   <div>
                     <p className="font-medium">{p.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {p.reg || "—"} · {p.university}
                     </p>
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setSelected(p)}
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => setSelected(p)}>
                     That's me
                   </Button>
                 </li>
@@ -164,9 +148,7 @@ function Index() {
           <div>
             <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-gold/20 bg-card-grad p-6 shadow-glow sm:flex-row sm:items-center">
               <div>
-                <p className="text-xs uppercase tracking-widest text-gold">
-                  Welcome
-                </p>
+                <p className="text-xs uppercase tracking-widest text-gold">Welcome</p>
                 <h2 className="mt-1 text-2xl font-semibold">{selected.name}</h2>
                 <p className="text-sm text-muted-foreground">
                   {selected.reg ? `Reg ${selected.reg} · ` : ""}
@@ -195,14 +177,9 @@ function Index() {
                     <span className="rounded-full border border-border bg-background/40 px-2.5 py-1 text-[10px] uppercase tracking-widest text-muted-foreground">
                       0{idx + 1}
                     </span>
-                    <Award
-                      className="h-5 w-5"
-                      style={{ color: c.accent }}
-                    />
+                    <Award className="h-5 w-5" style={{ color: c.accent }} />
                   </div>
-                  <h3 className="mt-6 text-lg font-semibold leading-snug">
-                    {c.title}
-                  </h3>
+                  <h3 className="mt-6 text-lg font-semibold leading-snug">{c.title}</h3>
                   <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
                     {c.subtitle}
                   </p>
@@ -211,15 +188,12 @@ function Index() {
                   </p>
                   <div className="mt-6 flex items-center justify-between">
                     <span className="text-[11px] text-muted-foreground">
-                      Issued by{" "}
-                      <span className="text-foreground">{c.issuer}</span>
+                      Issued by <span className="text-foreground">{c.issuer}</span>
                     </span>
                     <Button
                       size="sm"
                       variant="secondary"
-                      onClick={() =>
-                        downloadCertificate(c, selected.name, selected.reg)
-                      }
+                      onClick={() => downloadCertificate(c, selected)}
                     >
                       <Download className="mr-1.5 h-3.5 w-3.5" /> PDF
                     </Button>
@@ -232,9 +206,8 @@ function Index() {
 
         {submitted && results.length === 0 && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-muted-foreground">
-            We couldn't find <span className="text-foreground">{submitted}</span>{" "}
-            in our participant list. Double-check your registration number, or
-            try your full name or email.
+            We couldn't find <span className="text-foreground">{submitted}</span> in our participant
+            list. Double-check your registration number, or try your full name or email.
           </div>
         )}
       </section>

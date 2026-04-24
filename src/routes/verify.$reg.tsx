@@ -28,7 +28,7 @@ function VerifyPage() {
   const { c } = Route.useSearch();
   const qd = digits(reg);
   const participant = PARTICIPANTS.find(
-    (p) => p.reg && (p.reg === reg || (qd && digits(p.reg) === qd)),
+    (p) => (p.reg && (p.reg === reg || (qd && digits(p.reg) === qd))) || (p.id && p.id === reg),
   );
   const highlighted = c ? CERTIFICATES.find((x) => x.id === c) : undefined;
 
@@ -60,38 +60,26 @@ function VerifyPage() {
             </div>
 
             <div className="px-6 py-8">
-              <p className="text-xs uppercase tracking-widest text-gold">
-                Issued to
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">
-                {participant.name}
-              </h1>
+              <p className="text-xs uppercase tracking-widest text-gold">Issued to</p>
+              <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{participant.name}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Registration {participant.reg} · {participant.university}
+                {participant.reg ? `Registration ${participant.reg} · ` : ""}
+                {participant.university}
               </p>
 
               {highlighted && (
                 <div className="mt-6 rounded-2xl border border-border bg-background/40 p-5">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-                    <Award
-                      className="h-4 w-4"
-                      style={{ color: highlighted.accent }}
-                    />
+                    <Award className="h-4 w-4" style={{ color: highlighted.accent }} />
                     Scanned certificate
                   </div>
-                  <h2 className="mt-2 text-xl font-semibold">
-                    {highlighted.title}
-                  </h2>
+                  <h2 className="mt-2 text-xl font-semibold">{highlighted.title}</h2>
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
                     {highlighted.subtitle}
                   </p>
                   <p className="mt-3 text-sm text-muted-foreground">
-                    Issued by{" "}
-                    <span className="text-foreground">{highlighted.issuer}</span>
-                    {highlighted.coIssuer
-                      ? ` in partnership with ${highlighted.coIssuer}`
-                      : ""}
-                    .
+                    Issued by <span className="text-foreground">{highlighted.issuer}</span>
+                    {highlighted.coIssuer ? ` in partnership with ${highlighted.coIssuer}` : ""}.
                   </p>
                 </div>
               )}
@@ -110,17 +98,10 @@ function VerifyPage() {
                           : "border-border bg-background/30"
                       }`}
                     >
-                      <Award
-                        className="h-4 w-4 shrink-0"
-                        style={{ color: cert.accent }}
-                      />
+                      <Award className="h-4 w-4 shrink-0" style={{ color: cert.accent }} />
                       <div>
-                        <p className="text-sm font-medium leading-tight">
-                          {cert.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {cert.issuer}
-                        </p>
+                        <p className="text-sm font-medium leading-tight">{cert.title}</p>
+                        <p className="text-xs text-muted-foreground">{cert.issuer}</p>
                       </div>
                     </li>
                   ))}
@@ -129,8 +110,8 @@ function VerifyPage() {
 
               <div className="mt-8 flex items-center justify-between gap-3 rounded-xl border border-border bg-background/30 px-4 py-3 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-gold" /> Verified against
-                  the official Trendians participant registry.
+                  <ShieldCheck className="h-4 w-4 text-gold" /> Verified against the official
+                  Trendians participant registry.
                 </span>
                 <Link to="/">
                   <Button size="sm" variant="secondary">
@@ -143,13 +124,11 @@ function VerifyPage() {
         ) : (
           <div className="rounded-3xl border border-destructive/30 bg-destructive/5 p-8 text-center">
             <XCircle className="mx-auto h-10 w-10 text-destructive" />
-            <h1 className="mt-4 text-2xl font-semibold">
-              Certificate not recognised
-            </h1>
+            <h1 className="mt-4 text-2xl font-semibold">Certificate not recognised</h1>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               We couldn't find a participant with registration{" "}
-              <span className="text-foreground">{reg}</span> in the official
-              Syntechs 2026 registry. This certificate could not be verified.
+              <span className="text-foreground">{reg}</span> in the official Syntechs 2026 registry.
+              This certificate could not be verified.
             </p>
             <Link to="/" className="mt-6 inline-block">
               <Button variant="secondary">Back to portal</Button>
