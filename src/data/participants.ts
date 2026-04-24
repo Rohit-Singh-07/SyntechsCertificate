@@ -16,6 +16,13 @@ export const PARTICIPANTS: Participant[] = [
     "university": "LPU"
   },
   {
+    "reg": "",
+    "name": "Aditya Jha",
+    "phone": "",
+    "email": "adityajhacr777@gmail.com",
+    "university": "LPU"
+  },
+  {
     "reg": "12315063",
     "name": "Aayush Punia",
     "phone": "9389996460",
